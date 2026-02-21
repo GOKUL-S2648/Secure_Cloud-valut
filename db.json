@@ -1,0 +1,33 @@
+{
+    "users": {
+        "gokul.al23@bitsathy.ac.in": {
+            "id": "1030724806c6cde1",
+            "username": "gokul.al23",
+            "email": "gokul.al23@bitsathy.ac.in",
+            "password": "1"
+        },
+        "sgokul0530@gmail.com": {
+            "id": "417d4d29a05aff58",
+            "username": "sgokul0530",
+            "email": "sgokul0530@gmail.com",
+            "password": "1"
+        }
+    },
+    "files": {
+        "1030724806c6cde1": [
+            {
+                "id": "6b4jpr6ih",
+                "ownerId": "1030724806c6cde1",
+                "name": "smart-hostel-portal-main.zip",
+                "size": 71414,
+                "type": "application/x-zip-compressed",
+                "uploadedAt": "2026-02-21T05:30:12.642Z",
+                "url": "blob:http://localhost:3000/7648f0f3-d35e-43a9-9260-b0dd071c258d",
+                "isPublic": true,
+                "category": "Technical",
+                "riskLevel": "Medium",
+                "verdict": "The file appears to be a compressed archive of a hostel management portal"
+            }
+        ]
+    }
+}

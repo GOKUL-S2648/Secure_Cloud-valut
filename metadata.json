@@ -1,0 +1,8 @@
+{
+  "name": "CloudVault Secure Sharing",
+  "description": "A professional cloud-based secure file sharing system with dynamic session-based access keys and encrypted storage simulation.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
