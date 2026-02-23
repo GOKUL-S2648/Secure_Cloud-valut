@@ -49,11 +49,11 @@ There is a need for a secure, AI-enhanced, cloud-based vault system.
 
 # 🧠 System Architecture
 
-User
-→ React Frontend (Vite)
-→ Python Backend (Flask API)
-→ Supabase (PostgreSQL + Storage)
-→ Groq LLM API
+- User
+- React Frontend (Vite)
+- Python Backend (Flask API)
+- Supabase (PostgreSQL + Storage)
+- Groq LLM API
 
 # Benefits
 
