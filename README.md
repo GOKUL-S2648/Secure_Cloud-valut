@@ -11,24 +11,27 @@ The system integrates modern cloud storage, LLM-powered intelligence, and strong
 Click the link above to access the deployed application.
 
 
-# 📌 Problem Statement
+## 📌 Problem Statement
 
-Traditional file-sharing platforms store files in plain format or rely only on basic authentication.
+Traditional file-sharing platforms store files in plain format or rely only on basic authentication.  
 Users face major issues:
-No end-to-end encryption for sensitive files
-No intelligent file interaction
-Limited access control for shared content
-Lack of secure key-based sharing
+
+- No end-to-end encryption for sensitive files  
+- No intelligent file interaction  
+- Limited access control for shared content  
+- Lack of secure key-based sharing  
+
 There is a need for a secure, AI-enhanced, cloud-based vault system.
+
 
 
 # 🎯 Objectives
 
-Build a secure encrypted file storage system
-Enable key-based secure file sharing
-Integrate AI for intelligent file interaction
-Implement role-based access control
-Deploy a scalable full-stack cloud solution
+- Build a secure encrypted file storage system  
+- Enable key-based secure file sharing  
+- Integrate AI for intelligent file interaction  
+- Implement role-based access control  
+- Deploy a scalable full-stack cloud solution  
 
 
 # ✨ Key Features
@@ -53,52 +56,55 @@ User
 
 # Benefits
 
-Secure encryption workflow
-Scalable cloud architecture
-Modular service-based design
-High-performance file handling
-AI-powered intelligent interaction
+- Secure encryption workflow  
+- Scalable cloud architecture  
+- Modular service-based design  
+- High-performance file handling  
+- AI-powered intelligent interaction  
 
 
 # 🗄️ Database Schema Entities
 
-User
-FileMetadata
-SharedAccess
-ChatHistory
-Relationships
-One User → Many Files
-One File → Many SharedAccess records
-One User → Many ChatHistory records
+- User  
+- FileMetadata  
+- SharedAccess  
+- ChatHistory  
+
+### Relationships
+
+- One User → Many Files  
+- One File → Many SharedAccess records  
+- One User → Many ChatHistory records  
+
 This structure ensures secure access tracking and efficient file management.
 
 
 # 🛠️ Tech Stack
 
 # Frontend
-React (Vite)
-Tailwind CSS
+- React (Vite)  
+- Tailwind CSS  
 
 # Backend
-Python (Flask)
-REST API
-Gunicorn (Production WSGI)
-AI Integration
-Groq LLM API
+- Python (Flask)  
+- REST API  
+- Gunicorn (Production WSGI)  
+- AI Integration  
+- Groq LLM API
 
 # Database & Storage
-Supabase (PostgreSQL + Object Storage)
+- Supabase (PostgreSQL + Object Storage)  
 
 # Security
-Client-side encryption
-Secret access key validation
-Role-based authorization
+- Client-side encryption  
+- Secret access key validation  
+- Role-based authorization 
 
 # Deployment
-Render (Frontend + Backend)
+- Render (Frontend + Backend)  
 
 # Version Control
-GitHub
+- GitHub
 
 
 # 📂 Project Structure
@@ -139,18 +145,19 @@ npm run dev
 # 🌍 Deployment
 
 The application is deployed using Render:
-Flask backend as Web Service
-React frontend as Static Site
-Supabase for database & storage
+
+- Flask backend as Web Service  
+- React frontend as Static Site  
+- Supabase for database & storage  
+
 
 # 🧪 Future Enhancements
 
-Multi-user collaboration on files
-File versioning system
-AI-based file summarization
-Real-time notifications
-Custom domain & CDN integration
-
+- Multi-user collaboration on files  
+- File versioning system  
+- AI-based file summarization  
+- Real-time notifications  
+- Custom domain & CDN integration  
 
 
 
