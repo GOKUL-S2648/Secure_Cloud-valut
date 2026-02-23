@@ -1,15 +1,17 @@
-🔐 AI-Powered Secure Cloud Vault for Encrypted File Sharing
+# 🔐 AI-Powered Secure Cloud Vault for Encrypted File Sharing
 
 A full-stack AI-enabled secure file storage and sharing platform that allows users to upload, encrypt, store, and share files using secret access keys.
 The system integrates modern cloud storage, LLM-powered intelligence, and strong access control to ensure privacy, scalability, and real-time secure collaboration.
 
 
-🚀 Live Demo
+# 🚀 Live Demo
+
 🔗 https://cloudvault-frontend-jogm.onrender.com
+
 Click the link above to access the deployed application.
 
 
-📌 Problem Statement
+# 📌 Problem Statement
 
 Traditional file-sharing platforms store files in plain format or rely only on basic authentication.
 Users face major issues:
@@ -20,7 +22,7 @@ Lack of secure key-based sharing
 There is a need for a secure, AI-enhanced, cloud-based vault system.
 
 
-🎯 Objectives
+# 🎯 Objectives
 
 Build a secure encrypted file storage system
 Enable key-based secure file sharing
@@ -29,7 +31,7 @@ Implement role-based access control
 Deploy a scalable full-stack cloud solution
 
 
-✨ Key Features
+# ✨ Key Features
 
 ✅ End-to-end encrypted file upload & storage
 ✅ Secret key-based secure file sharing
@@ -41,7 +43,7 @@ Deploy a scalable full-stack cloud solution
 ✅ Fully deployed production-ready system
 
 
-🧠 System Architecture
+# 🧠 System Architecture
 
 User
 → React Frontend (Vite)
@@ -49,7 +51,7 @@ User
 → Supabase (PostgreSQL + Storage)
 → Groq LLM API
 
-Benefits
+# Benefits
 
 Secure encryption workflow
 Scalable cloud architecture
@@ -58,8 +60,7 @@ High-performance file handling
 AI-powered intelligent interaction
 
 
-🗄️ Database Schema
-Entities
+# 🗄️ Database Schema Entities
 
 User
 FileMetadata
@@ -72,35 +73,35 @@ One User → Many ChatHistory records
 This structure ensures secure access tracking and efficient file management.
 
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
 
-Frontend
+# Frontend
 React (Vite)
 Tailwind CSS
 
-Backend
+# Backend
 Python (Flask)
 REST API
 Gunicorn (Production WSGI)
 AI Integration
 Groq LLM API
 
-Database & Storage
+# Database & Storage
 Supabase (PostgreSQL + Object Storage)
 
-Security
+# Security
 Client-side encryption
 Secret access key validation
 Role-based authorization
 
-Deployment
+# Deployment
 Render (Frontend + Backend)
 
-Version Control
+# Version Control
 GitHub
 
 
-📂 Project Structure
+# 📂 Project Structure
 cloudvault-secure-sharing
 │── components        # UI components
 │── services          # API & encryption logic
@@ -109,33 +110,33 @@ cloudvault-secure-sharing
 │── requirements.txt  # Backend dependencies
 
 
-⚙️ Installation & Setup
+# ⚙️ Installation & Setup
 
-1️⃣ Clone the repository
-git clone https://github.com/GOKUL-S2648/cloudvault-secure-sharing
+# 1️⃣ Clone the repository
+git clone -  https://github.com/GOKUL-S2648/Cloud-valut
 cd cloudvault-secure-sharing
 
-2️⃣ Install dependencies
+# 2️⃣ Install dependencies
 Frontend
 npm install
 
 Backend
 pip install -r requirements.txt
 
-3️⃣ Configure environment variables
+# 3️⃣ Configure environment variables
 Create .env file:
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
 GROQ_API_KEY=your_groq_api_key
 
-4️⃣ Run locally
+# 4️⃣ Run locally
 Start backend
 python server.py
 
 Start frontend
 npm run dev
 
-🌍 Deployment
+# 🌍 Deployment
 
 The application is deployed using Render:
 Flask backend as Web Service
@@ -143,7 +144,7 @@ React frontend as Static Site
 Supabase for database & storage
 
 
-🧪 Future Enhancements
+# 🧪 Future Enhancements
 
 Multi-user collaboration on files
 File versioning system
