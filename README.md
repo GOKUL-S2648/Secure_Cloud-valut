@@ -36,14 +36,15 @@ There is a need for a secure, AI-enhanced, cloud-based vault system.
 
 # ✨ Key Features
 
-✅ End-to-end encrypted file upload & storage
-✅ Secret key-based secure file sharing
-✅ Role-based access control
-✅ AI-powered file assistant (LLM integration)
-✅ Real-time file access & management
-✅ User authentication system
-✅ Cloud storage using Supabase
-✅ Fully deployed production-ready system
+- End-to-end encrypted file upload & storage  
+- Secret key-based secure file sharing  
+- Role-based access control  
+- AI-powered file assistant (LLM integration)  
+- Real-time file access & management  
+- User authentication system  
+- Cloud storage using Supabase  
+- Fully deployed production-ready system  
+
 
 
 # 🧠 System Architecture
@@ -108,12 +109,17 @@ This structure ensures secure access tracking and efficient file management.
 
 
 # 📂 Project Structure
-cloudvault-secure-sharing
-│── components        # UI components
-│── services          # API & encryption logic
-│── server.py         # Flask backend
-│── package.json      # Frontend dependencies
-│── requirements.txt  # Backend dependencies
+- cloudvault-secure-sharing  
+        ↓
+- components        → UI components  
+        ↓
+- services          → API & encryption logic  
+        ↓
+- server.py         → Flask backend  
+        ↓
+- package.json      → Frontend dependencies  
+        ↓
+- requirements.txt  → Backend dependencies  
 
 
 # ⚙️ Installation & Setup
