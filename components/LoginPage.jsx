@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../services/api';
 
 export const LoginPage = ({ onLogin, onBackToLanding }) => {
   const [email, setEmail] = useState('');
@@ -20,9 +21,8 @@ export const LoginPage = ({ onLogin, onBackToLanding }) => {
 
     try {
       const endpoint = isRegistering ? '/api/register' : '/api/login';
-      const response = await fetch(endpoint, {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
       const data = await response.json();

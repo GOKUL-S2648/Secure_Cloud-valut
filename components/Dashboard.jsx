@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { generateDynamicKey } from '../constants';
 import { HomeView } from './HomeView';
 import { SharedView } from './SharedView';
+import { NotificationView } from './NotificationView';
 
 export const Dashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('my-files');
   const [accessKey, setAccessKey] = useState('');
 
   useEffect(() => {
-    setAccessKey(generateDynamicKey(user.id));
+    setAccessKey(generateDynamicKey(user.id, user.session_salt));
     const interval = setInterval(() => {
-      setAccessKey(generateDynamicKey(user.id));
+      setAccessKey(generateDynamicKey(user.id, user.session_salt));
     }, 1000 * 60 * 60); // Check every hour
     return () => clearInterval(interval);
-  }, [user.id]);
+  }, [user.id, user.session_salt]);
 
   return (
     <div className="flex h-screen bg-[#050505] overflow-hidden fade-in text-slate-300">
@@ -48,6 +49,15 @@ export const Dashboard = ({ user, onLogout }) => {
               </svg>
               <span className="font-semibold text-sm">Shared Files</span>
             </button>
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all border border-transparent ${activeTab === 'notifications' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="font-semibold text-sm">Notifications</span>
+            </button>
           </nav>
         </div>
 
@@ -76,7 +86,7 @@ export const Dashboard = ({ user, onLogout }) => {
         {/* Header */}
         <header className="h-16 border-b border-white/5 px-8 flex items-center justify-between z-10">
           <h1 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-            {activeTab === 'my-files' ? 'Inventory' : 'Shared Port'}
+            {activeTab === 'my-files' ? 'Inventory' : activeTab === 'shared' ? 'Shared Port' : 'Signals'}
           </h1>
           <div className="flex items-center">
             <div className="flex items-center space-x-3 bg-[#0c111d] px-4 py-2 rounded-xl border border-white/10 text-xs shadow-xl shadow-black/20">
@@ -90,6 +100,7 @@ export const Dashboard = ({ user, onLogout }) => {
         <div className="flex-1 overflow-y-auto p-8 z-10 custom-scrollbar">
           {activeTab === 'my-files' && <HomeView user={user} />}
           {activeTab === 'shared' && <SharedView user={user} />}
+          {activeTab === 'notifications' && <NotificationView user={user} />}
         </div>
       </main>
     </div>

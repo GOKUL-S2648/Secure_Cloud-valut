@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { formatBytes } from '../constants';
+import { apiFetch } from '../services/api';
+import { decryptFile, base64ToBuffer } from '../services/encryption';
 
 export const SharedView = ({ user }) => {
   const [targetKey, setTargetKey] = useState('');
   const [sharedFiles, setSharedFiles] = useState(null);
   const [error, setError] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isDecrypting, setIsDecrypting] = useState(null);
+  const [approvalStatus, setApprovalStatus] = useState({}); // { fileId: 'pending' | 'approved' | 'none' }
+  const [isRequesting, setIsRequesting] = useState(null);
 
   // Clear error when user starts typing again
   useEffect(() => {
@@ -23,11 +28,27 @@ export const SharedView = ({ user }) => {
     setSharedFiles(null);
 
     try {
-      const response = await fetch(`/api/shared-files/${targetKey}`);
+      const response = await apiFetch(`/api/shared-files/${targetKey}`);
       const data = await response.json();
+      console.log("Shared files response:", data);
 
       if (response.ok) {
         setSharedFiles(data.files);
+        // After fetching files, check which ones are approved for this key
+        const newStatus = {};
+        for (const file of data.files) {
+          try {
+            const checkRes = await apiFetch('/api/check-approval', {
+              method: 'POST',
+              body: JSON.stringify({ fileId: file.id, requesterKey: targetKey.toUpperCase() })
+            });
+            const checkData = await checkRes.json();
+            newStatus[file.id] = checkData.approved ? 'approved' : 'none';
+          } catch (e) {
+            newStatus[file.id] = 'none';
+          }
+        }
+        setApprovalStatus(newStatus);
       } else {
         setError(data.error);
       }
@@ -35,6 +56,62 @@ export const SharedView = ({ user }) => {
       setError('Connection failed. Please ensure the backend is running.');
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleRequestAccess = async (file) => {
+    setIsRequesting(file.id);
+    console.log("DEBUG: Sending access request for file:", file.id, "Owner:", file.ownerId);
+    try {
+      const response = await apiFetch('/api/access-requests', {
+        method: 'POST',
+        body: JSON.stringify({
+          fileId: file.id,
+          ownerId: file.ownerId, // Server will derive this but we pass it anyway
+          requesterKey: targetKey.toUpperCase()
+        })
+      });
+
+      if (response.ok) {
+        setApprovalStatus(prev => ({ ...prev, [file.id]: 'pending' }));
+        alert("Access request sent to owner. Please wait for approval.");
+      } else {
+        alert("Failed to send access request.");
+      }
+    } catch (err) {
+      alert("Error sending request.");
+    } finally {
+      setIsRequesting(null);
+    }
+  };
+
+  const handleDownload = async (file) => {
+    if (!file.cipherContent || !file.iv) {
+      // Fallback for unencrypted files
+      window.open(file.url, '_blank');
+      return;
+    }
+
+    try {
+      setIsDecrypting(file.id);
+      const cipherData = base64ToBuffer(file.cipherContent);
+      const ivData = base64ToBuffer(file.iv);
+
+      const decryptedBlob = await decryptFile(cipherData, ivData, targetKey.toUpperCase(), file.type);
+
+      const downloadUrl = URL.createObjectURL(decryptedBlob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Decryption failed:", err);
+      alert("Decryption failed. The key may be incorrect or corrupted.");
+    } finally {
+      setIsDecrypting(null);
     }
   };
 
@@ -134,7 +211,12 @@ export const SharedView = ({ user }) => {
                               )}
                             </div>
                             <div>
-                              <span className="font-bold text-white block text-sm">{file.name}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-white block text-sm">{file.name}</span>
+                                {file.cipherContent && (
+                                  <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[8px] font-bold uppercase border border-blue-500/20">🔒 Encrypted</span>
+                                )}
+                              </div>
                               <span className="text-[10px] text-slate-500 font-mono mt-0.5 block">{file.type}</span>
                             </div>
                           </div>
@@ -143,13 +225,42 @@ export const SharedView = ({ user }) => {
                           <span className="text-xs font-semibold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">{formatBytes(file.size)}</span>
                         </td>
                         <td className="px-8 py-5 text-right">
-                          <button
-                            onClick={() => window.open(file.url, '_blank')}
-                            className="inline-flex items-center px-5 py-2.5 bg-blue-600/10 text-blue-400 text-xs font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-500/20 group-hover:shadow-lg"
-                          >
-                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Download
-                          </button>
+                          {approvalStatus[file.id] === 'approved' ? (
+                            <button
+                              onClick={() => handleDownload(file)}
+                              disabled={isDecrypting === file.id}
+                              className="inline-flex items-center px-5 py-2.5 bg-blue-600/10 text-blue-400 text-xs font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-500/20 group-hover:shadow-lg disabled:opacity-50"
+                            >
+                              {isDecrypting === file.id ? (
+                                <>
+                                  <svg className="animate-spin h-3 w-3 mr-2" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                  Decrypting...
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                  Secure Download
+                                </>
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleRequestAccess(file)}
+                              disabled={isRequesting === file.id || approvalStatus[file.id] === 'pending'}
+                              className={`inline-flex items-center px-5 py-2.5 text-xs font-bold rounded-xl transition-all border shadow-lg shadow-black/20 ${approvalStatus[file.id] === 'pending'
+                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 cursor-not-allowed'
+                                : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20 hover:border-emerald-500/40'
+                                }`}
+                            >
+                              {isRequesting === file.id ? (
+                                <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                              ) : approvalStatus[file.id] === 'pending' ? (
+                                'Waiting Approval'
+                              ) : (
+                                'Request Decryption'
+                              )}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     )))}

@@ -1,11 +1,10 @@
-// Backend-powered service
+import { apiFetch } from './api';
 
 export class GroqService {
     async analyzeFile(fileName, fileType) {
         try {
-            const response = await fetch('/api/analyze', {
+            const response = await apiFetch('/api/analyze', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fileName, fileType })
             });
             return await response.json();

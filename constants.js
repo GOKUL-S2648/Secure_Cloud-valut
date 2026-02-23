@@ -10,10 +10,9 @@ export const formatBytes = (bytes, decimals = 2) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
 
-export const generateDynamicKey = (userId) => {
-  // Generates a key that changes every 4 hours
-  const hours = Math.floor(Date.now() / (1000 * 60 * 60 * 4));
-  const seed = userId + hours.toString();
+export const generateDynamicKey = (userId, salt) => {
+  // Generates a key that changes on every login (based on session salt)
+  const seed = userId + (salt || "cloudvault-legacy");
   // Simple hash for demo purposes
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { formatBytes } from '../constants';
+import { formatBytes, generateDynamicKey } from '../constants';
 import { groqService } from '../services/groqService';
+import { apiFetch } from '../services/api';
+import { encryptFile, decryptFile, bufferToBase64, base64ToBuffer } from '../services/encryption';
 
 export const HomeView = ({ user }) => {
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDecrypting, setIsDecrypting] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/files/${user.id}`)
+    apiFetch(`/api/files/${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -21,9 +24,8 @@ export const HomeView = ({ user }) => {
 
   const saveFiles = async (newFiles) => {
     setFiles(newFiles);
-    await fetch(`/api/files/${user.id}`, {
+    await apiFetch(`/api/files/${user.id}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newFiles)
     });
   };
@@ -34,10 +36,16 @@ export const HomeView = ({ user }) => {
 
     setIsUploading(true);
     const uploadedFiles = [];
+    const currentKey = generateDynamicKey(user.id, user.session_salt);
 
     for (let i = 0; i < fileList.length; i++) {
       const f = fileList[i];
+
+      // 1. AI Analysis (on raw metadata)
       const analysis = await groqService.analyzeFile(f.name, f.type);
+
+      // 2. Encryption (on content)
+      const { cipherText, iv } = await encryptFile(f, currentKey);
 
       const fileData = {
         id: Math.random().toString(36).substr(2, 9),
@@ -46,11 +54,13 @@ export const HomeView = ({ user }) => {
         size: f.size,
         type: f.type,
         uploadedAt: new Date().toISOString(),
-        url: URL.createObjectURL(f),
+        url: URL.createObjectURL(f), // Local preview
         isPublic: true,
         category: analysis.category,
         riskLevel: analysis.riskLevel,
-        verdict: analysis.verdict
+        verdict: analysis.verdict,
+        cipherContent: bufferToBase64(cipherText),
+        iv: bufferToBase64(iv)
       };
       uploadedFiles.push(fileData);
     }
@@ -59,8 +69,50 @@ export const HomeView = ({ user }) => {
     setIsUploading(false);
   };
 
-  const deleteFile = (id) => {
-    saveFiles(files.filter(f => f.id !== id));
+  const handleSecureDownload = async (file) => {
+    if (!file.cipherContent || !file.iv) {
+      alert("This file was not uploaded using the secure encryption protocol.");
+      return;
+    }
+
+    setIsDecrypting(file.id);
+    const activeKey = generateDynamicKey(user.id);
+
+    try {
+      const cipherBuffer = base64ToBuffer(file.cipherContent);
+      const ivBuffer = base64ToBuffer(file.iv);
+
+      const decryptedBlob = await decryptFile(cipherBuffer, ivBuffer, activeKey, file.type);
+      const url = window.URL.createObjectURL(decryptedBlob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DECRYPTED_${file.name}`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Decryption failed:', err);
+      alert("Decryption failed. Your Master Key may have changed since this file was uploaded.");
+    } finally {
+      setIsDecrypting(null);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await apiFetch(`/api/files/${user.id}/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setFiles(files.filter(f => f.id !== id));
+      } else {
+        const errorData = await response.json();
+        alert(`Delete failed: ${errorData.error}`);
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Connection error during deletion.');
+    }
   };
 
   return (
@@ -72,8 +124,11 @@ export const HomeView = ({ user }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">Ingest Resources</h2>
-        <p className="text-slate-500 text-sm mb-8 max-w-sm mx-auto">Drop your encrypted volumes or media files to sync them with your secure vault.</p>
+        <h2 className="text-xl font-bold text-white mb-2 flex items-center justify-center gap-2">
+          Ingest Resources
+          <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 font-black tracking-widest uppercase">Auto-Encrypt active</span>
+        </h2>
+        <p className="text-slate-500 text-sm mb-8 max-w-sm mx-auto">Drop your encrypted volumes or media files to sync them with your secure vault. All files are encrypted client-side using 256-bit AES-GCM before upload.</p>
         <input
           type="file"
           multiple
@@ -130,7 +185,13 @@ export const HomeView = ({ user }) => {
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                           )}
                         </div>
-                        <span className="font-bold text-white">{file.name}</span>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-white">{file.name}</span>
+                          <span className="text-[10px] font-bold text-emerald-400/80 flex items-center gap-1 mt-0.5">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                            AES-256 GCM Protected
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-xs font-semibold text-slate-500">
@@ -155,12 +216,27 @@ export const HomeView = ({ user }) => {
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <div className="flex items-center justify-end space-x-3">
-                        <button onClick={() => window.open(file.url)} className="p-2.5 text-blue-400 hover:bg-blue-500/10 rounded-xl transition-all border border-transparent hover:border-blue-500/20 group-hover:shadow-lg">
-                          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => window.open(file.url)}
+                          title="View local preview"
+                          className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-xl transition-all border border-blue-500/20 hover:border-blue-500/40 shadow-lg shadow-black/20"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span className="text-[10px] font-bold uppercase tracking-wider hidden md:inline">View</span>
                         </button>
-                        <button onClick={() => deleteFile(file.id)} className="p-2.5 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all border border-transparent hover:border-rose-500/20">
-                          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <button
+                          onClick={() => handleDelete(file.id)}
+                          title="Delete permanently"
+                          className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 rounded-xl transition-all border border-rose-500/20 hover:border-rose-500/40 shadow-lg shadow-black/20"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span className="text-[10px] font-bold uppercase tracking-wider hidden md:inline">Delete</span>
                         </button>
                       </div>
                     </td>
