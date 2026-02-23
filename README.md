@@ -1,6 +1,6 @@
-# 🔐 AI-Powered Secure Cloud Vault for Encrypted File Sharing
+# 🔐 Secure Cloud Vault for Encrypted File Sharing
 
-A full-stack AI-enabled secure file storage and sharing platform that allows users to upload, encrypt, store, and share files using secret access keys.
+A full-stack secure file storage and sharing platform that allows users to upload, encrypt, store, and share files using secret access keys.
 The system integrates modern cloud storage, LLM-powered intelligence, and strong access control to ensure privacy, scalability, and real-time secure collaboration.
 
 
