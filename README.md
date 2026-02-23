@@ -125,7 +125,7 @@ This structure ensures secure access tracking and efficient file management.
 # ⚙️ Installation & Setup
 
 # 1️⃣ Clone the repository
-git clone -  https://github.com/GOKUL-S2648/Cloud-valut
+git clone - https://github.com/GOKUL-S2648/Secure_Cloud-valut
 cd cloudvault-secure-sharing
 
 # 2️⃣ Install dependencies
