@@ -143,7 +143,6 @@ Flask backend as Web Service
 React frontend as Static Site
 Supabase for database & storage
 
-
 # 🧪 Future Enhancements
 
 Multi-user collaboration on files
