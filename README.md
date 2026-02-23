@@ -142,11 +142,11 @@ SUPABASE_KEY=your_supabase_key
 GROQ_API_KEY=your_groq_api_key
 
 # 4️⃣ Run locally
-Start backend
-python server.py
+# Start backend
+- python server.py
 
-Start frontend
-npm run dev
+# Start frontend
+- npm run dev
 
 # 🌍 Deployment
 
